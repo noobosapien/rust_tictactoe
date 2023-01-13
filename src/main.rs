@@ -22,6 +22,7 @@ struct Game {
     cells: Vec<Cell>,
     current_player: u8,
     won: Cell,
+    valid: bool,
 }
 
 impl fmt::Display for Game {
@@ -51,7 +52,13 @@ impl Game {
             std::io::stdin().read_line(&mut input).unwrap();
 
             let value = match input.trim().parse::<u32>() {
-                Ok(n) => n - 1,
+                Ok(n) => {
+                    if n > 0 {
+                        n - 1
+                    } else {
+                        10
+                    }
+                }
 
                 Err(_e) => 10,
             };
@@ -84,6 +91,16 @@ impl Game {
             1 => Cell::O,
             _ => Cell::E,
         };
+
+        let mut valid = false;
+
+        for cell in &self.cells {
+            if *cell == Cell::E {
+                valid = true;
+            }
+        }
+
+        self.valid = valid;
 
         if (self.cells[0] != Cell::E
             && self.cells[0] == self.cells[1]
@@ -151,14 +168,19 @@ fn main() {
             Cell::E,
         ],
         won: Cell::E,
+        valid: true,
         current_player: 0,
     };
 
     println!("{}", game);
 
-    while game.won == Cell::E {
+    while game.won == Cell::E && game.valid {
         game.play();
     }
 
-    println!("{} won the game.", game.won)
+    if !game.valid {
+        println!("No result for this game")
+    } else {
+        println!("{} won the game.", game.won)
+    }
 }
